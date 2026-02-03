@@ -1,1 +1,3 @@
-
+$$
+I_{PH} = I_{PH,ref}\frac{G}{G_{ref}}(1+\gamma_T(T-T_{ref}))
+$$
