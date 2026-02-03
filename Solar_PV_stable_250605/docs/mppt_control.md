@@ -1,23 +1,77 @@
-# Control Implementation (MPPT)
+## MPPT control implementation
 
-We evaluate the performance of SDM_A and PPDM_A under an MPPT control scheme.
-This section describes how we obtain the MPP operating point for both models.
+This section describes how the maximum power point (MPP) operating condition is
+computed for the aggregated single-diode array model (SDM_A) and the per-panel
+diode model (PPDM_A).
 
-## SDM_A: closed-form MPPT condition
-At MPP:
-![dP/dV condition](../figures/eq_dPdV_zero.png)
+### SDM_A: closed-form MPP condition
 
-Further derivation yields the closed-form relation:
-![closed-form MPPT equation](../figures/eq_mpp_closed_form.png)
+For SDM_A, the MPP is obtained by enforcing the condition that the derivative of
+array power with respect to the terminal voltage is zero. Specifically, the MPP
+satisfies:
 
-where:
-![chi definition](../figures/eq_chi.png)
+```math
+\frac{\partial \left( I_{\mathrm{out}}^{a} V_{\mathrm{PV}}^{a} \right)}
+{\partial V_{\mathrm{PV}}^{a}}
+=
+0
+```
+Further algebraic manipulation yields a closed-form relationship between the
+array output current and voltage at the MPP:
+```math
+I_{\mathrm{out}}^{a}
+=
+\frac{
+V_{\mathrm{PV}}^{a}
+\left(
+I_0^{a} R_{\mathrm{SH}}^{a} \chi
++
+\alpha^{a}
+\right)
+}{
+I_0^{a} R_S^{a} R_{\mathrm{SH}}^{a} \chi
++
+\alpha^{a}
+\left(
+R_S^{a}
++
+R_{\mathrm{SH}}^{a}
+\right)
+}
+```
+where the auxiliary variable $\chi$ is defined as:
 
-By applying the closed-form equation, we effectively replace Z_Load with a voltage-controlled current source.
+```math
+\chi
+=
+\exp\left(
+\frac{V_D^{a}}{\alpha^{a}}
+\right)
+```
 
-## PPDM_A: optimization-based MPP
-For a non-uniform array, there is no closed-form MPPT equation.
-We solve:
-![optimization problem](../figures/eq_ppdm_mpp_opt.png)
+### PPDM_A: optimization-based MPP formulation
 
-where the equality constraints include (Eq. ...): KCL/KVL and per-panel diode physics (with/without bypass diodes).
+For PPDM_A, no closed-form MPP condition exists under non-uniform operating
+conditions. Instead, the MPP is obtained by solving an optimization problem that
+maximizes the array output power subject to the per-panel circuit constraints.
+
+The optimization problem is formulated as:
+
+```math
+\max_{\; V_{\mathrm{PV}}^{p},\, V_D^{p},\, I_{\mathrm{out}}^{p}}
+\;
+I_{\mathrm{array}} V_{\mathrm{array}}
+```
+subject to the equality constraint:
+```math
+h\!\left(
+V_{\mathrm{PV}}^{p},
+V_D^{p},
+I_{\mathrm{out}}^{p}
+\right)
+=
+0
+```
+The constraint function $h(\cdot)$ enforces the per-panel electrical physics of
+PPDM_A, including Kirchhoff’s current and voltage laws, panel diode equations,
+array interconnection constraints, and optional bypass diode behavior.
